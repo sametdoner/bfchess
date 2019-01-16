@@ -10,8 +10,10 @@
     "test:e2e": "vue-cli-service test:e2e"
   },
   "dependencies": {
+    "bootstrap": "^4.2.1",
     "bootstrap-vue": "^2.0.0-rc.11",
     "chess.js": "^0.10.2",
+    "chessboardjs": "0.0.1",
     "jQuery": "^1.7.4",
     "jquery": "^3.3.1",
     "vue": "^2.5.17",
