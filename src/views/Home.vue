@@ -1,8 +1,8 @@
 <template>
   <div class="home">
     <div id="board" style="width: 450px; margin: 20px auto"></div>
-    <!-- <input type="button" @click.prevent="startgame" value="Start" /> -->
-    <!-- <input type="button" id="setStartBtn" value="Start Position" /> -->
+    <p>Status: <span id="status"></span></p>
+    <p>PGN: <span id="pgn"></span></p>
   </div>
 
 
@@ -19,6 +19,9 @@ export default {
   mounted() {
     let board = new Chess();
     const game = new Chess();
+    const statusEl = $('#status');
+    const pgnEl = $('#pgn');
+
     function removeGreySquares() {
       $('#board .square-55d63').css('background', '');
     }
@@ -32,6 +35,7 @@ export default {
       }
       squareEl.css('background', background);
     }
+
     function onDragStart(source, piece) {
     // do not pick up pieces if the game is over
     // or if it's not that side's turn
@@ -85,6 +89,32 @@ export default {
       board.position(game.fen());
     }
 
+    function updateStatus() {
+      let status = '';
+      let moveColor = 'White';
+
+      if (game.turn() === 'b') { moveColor = 'Black'; }
+
+      // checkmate?
+      if (game.in_checkmate() === true) { status = 'Game over, ' + moveColor + ' is in checkmate.'; }
+
+      // draw?
+      else if (game.in_draw() === true) { status = 'Game over, drawn position'; }
+
+      // game still on
+      else {
+        // status = `${moveColor} + ' to move'`;
+        status = moveColor + ' to move';
+
+        // check?
+        if (game.in_check() === true) {
+          status += `', ' + ${moveColor} + ' is in check'`;
+        }
+      }
+      statusEl.html(status);
+      pgnEl.html(game.pgn());
+    }
+
     const cfg = {
       draggable: true,
       position: 'start',
@@ -95,6 +125,8 @@ export default {
       onSnapEnd,
     };
     board = window.ChessBoard('board', cfg);
+
+    updateStatus();
   },
   data() {
     return {
