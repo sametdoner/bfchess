@@ -1,8 +1,10 @@
 <template>
   <div class="home">
-    <div id="board" style="width: 450px; margin: 20px auto"></div>
-    <p>Status: <span id="status"></span></p>
-    <p>PGN: <span id="pgn"></span></p>
+    <div class="col-sm-12">
+      <div id="board"></div>
+      <p>Status: <span id="status"></span></p>
+      <p>PGN: <span id="pgn"></span></p>
+    </div>
   </div>
 </template>
 
@@ -21,6 +23,20 @@ export default {
     const fenEl = $('#fen');
     const pgnEl = $('#pgn');
 
+    function removeGreySquares() {
+      $('#board .square-55d63').css('background', '');
+    }
+
+    function greySquare(square) {
+      const squareEl = $(`#board .square-${square}`);
+
+      let background = '#a9a9a9';
+      if (squareEl.hasClass('black-3c85d') === true) {
+        background = '#696969';
+      }
+
+      squareEl.css('background', background);
+    }
     // do not pick up pieces if the game is over
     // only pick up pieces for the side to move
     function onDragStart(source, piece) {
@@ -31,21 +47,28 @@ export default {
       }
       return true;
     }
-
-    function onDrop(source, target) {
-      // see if the move is legal
-      const move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q', // NOTE: always promote to a queen for example simplicity
+    function onMouseoverSquare(square) {
+      // get list of possible moves for this square
+      const moves = game.moves({
+        square,
+        verbose: true,
       });
 
-      // illegal move
-      if (move === null) return 'snapback';
+      // exit if there are no moves available for this square
+      if (moves.length === 0) return;
 
-      updateStatus();
+      // highlight the square they moused over
+      greySquare(square);
+
+      // highlight the possible squares for this piece
+      for (let i = 0; i < moves.length; i++) {
+        greySquare(moves[i].to);
+      }
     }
 
+    function onMouseoutSquare() {
+      removeGreySquares();
+    }
     // update the board position after the piece snap
     // for castling, en passant, pawn promotion
     function onSnapEnd() {
@@ -62,27 +85,42 @@ export default {
 
       // checkmate?
       if (game.in_checkmate() === true) {
-        status = 'Game over, ' + moveColor + ' is in checkmate.';
+        status = `Game over,  ${moveColor} is in checkmate.`;
+        alert(status);
       }
 
       // draw?
       else if (game.in_draw() === true) {
         status = 'Game over, drawn position';
+        alert(status);
       }
 
       // game still on
       else {
-        status = moveColor + ' to move';
+        status = `${moveColor} turn`;
 
         // check?
         if (game.in_check() === true) {
-          status += ', ' + moveColor + ' is in check';
+          status += `, ${moveColor}  is in check`;
         }
       }
 
       statusEl.html(status);
-      // fenEl.html(game.fen());
       pgnEl.html(game.pgn());
+      // fenEl.html(game.fen());
+    }
+    function onDrop(source, target) {
+      // see if the move is legal
+      const move = game.move({
+        from: source,
+        to: target,
+        promotion: 'q', // NOTE: always promote to a queen for example simplicity
+      });
+
+      // illegal move
+      if (move === null) return 'snapback';
+
+      updateStatus();
     }
 
     const cfg = {
@@ -91,6 +129,8 @@ export default {
       onDragStart,
       onDrop,
       onSnapEnd,
+      onMouseoutSquare,
+      onMouseoverSquare,
     };
     board = window.ChessBoard('board', cfg);
 
@@ -103,3 +143,10 @@ export default {
   },
 };
 </script>
+
+<style>
+  #board {
+    width: 450px;
+    margin: 20px auto;
+  }
+</style>
