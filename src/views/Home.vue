@@ -1,9 +1,11 @@
 <template>
   <div class="home">
-    <div class="col-sm-12">
-      <div id="board"></div>
-      <p>Status: <span id="status"></span></p>
-      <p>PGN: <span id="pgn"></span></p>
+    <div class="row">
+      <div class="col-sm-12 mt-5">
+        <div id="board"></div>
+        <h6 class="status">Status: <span id="status"></span></h6>
+        <p>PGN: <span id="pgn"></span></p>
+      </div>
     </div>
   </div>
 </template>
@@ -19,9 +21,16 @@ export default {
   mounted() {
     let board;
     const game = new Chess();
+    const boardEl = $('#board');
     const statusEl = $('#status');
     const fenEl = $('#fen');
     const pgnEl = $('#pgn');
+
+
+    function removeHighlights(color) {
+      boardEl.find('.square-55d63')
+        .removeClass('highlight');
+    }
 
     function removeGreySquares() {
       $('#board .square-55d63').css('background', '');
@@ -69,6 +78,7 @@ export default {
     function onMouseoutSquare() {
       removeGreySquares();
     }
+
     // update the board position after the piece snap
     // for castling, en passant, pawn promotion
     function onSnapEnd() {
@@ -120,6 +130,10 @@ export default {
       // illegal move
       if (move === null) return 'snapback';
 
+      removeHighlights('white');
+      boardEl.find('.square-' + source).addClass('highlight');
+      boardEl.find('.square-' + target).addClass('highlight');
+
       updateStatus();
     }
 
@@ -149,4 +163,11 @@ export default {
     width: 450px;
     margin: 20px auto;
   }
+  .status {
+    font-weight: 600;
+  }
+  .highlight {
+    background-color: #7fb18b;
+  }
+
 </style>
